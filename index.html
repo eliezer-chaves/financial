@@ -39,11 +39,17 @@
         .was-validated .form-control:invalid ~ .invalid-feedback {
             display: block;
         }
+        .form-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.25rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-4">Gestão de Transações</h1>
+        <h1 class="text-center mb-4">Gestão de Transações Financeiras</h1>
         
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#transactionModal">
             <i class="fas fa-plus"></i> Nova Transação
@@ -51,12 +57,17 @@
 
         <div class="table-responsive">
             <table class="table table-striped">
-                <thead>
+                <thead class="table-dark">
                     <tr>
                         <th>ID</th>
                         <th>Data</th>
                         <th>Tipo</th>
-                        <th>Valor</th>
+                        <th>Corretora</th>
+                        <th>Ticker</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unit.</th>
+                        <th>Taxas</th>
+                        <th>Total</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -67,33 +78,103 @@
 
     <!-- Modal -->
     <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Nova Transação</h5>
+                    <h5 class="modal-title" id="modalTitle">Nova Transação</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="transactionForm" class="needs-validation" novalidate>
                         <input type="hidden" id="transactionId">
-                        <div class="mb-3">
-                            <label class="form-label">Tipo</label>
-                            <select class="form-select" id="transactionType" required>
-                                <option value="">Selecione...</option>
-                                <option value="1">Venda</option>
-                                <option value="2">Compra</option>
-                            </select>
-                            <div class="invalid-feedback">Selecione o tipo</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionType" class="form-label">Tipo de Transação *</label>
+                                    <select class="form-select" id="transactionType" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="1">Venda</option>
+                                        <option value="2">Compra</option>
+                                        <option value="3">Aporte</option>
+                                        <option value="4">Proventos</option>
+                                    </select>
+                                    <div class="invalid-feedback">Por favor, selecione o tipo de transação</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="brokerage" class="form-label">Corretora *</label>
+                                    <select class="form-select" id="brokerage" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="2">Rico</option>
+                                        <option value="3">Inter</option>
+                                    </select>
+                                    <div class="invalid-feedback">Por favor, selecione a corretora</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Valor</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" required>
-                            <div class="invalid-feedback">Informe o valor</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ticker" class="form-label">Ticker *</label>
+                                    <input type="text" class="form-control" id="ticker" required>
+                                    <div class="invalid-feedback">Por favor, informe o ticker</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="assetClass" class="form-label">Classe do Ativo *</label>
+                                    <select class="form-select" id="assetClass" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="1">Fundo Imobiliário</option>
+                                        <option value="2">Ação</option>
+                                        <option value="3">Aporte</option>
+                                        <option value="4">Dividendo</option>
+                                    </select>
+                                    <div class="invalid-feedback">Por favor, selecione a classe do ativo</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Data</label>
-                            <input type="date" class="form-control" id="date" required>
-                            <div class="invalid-feedback">Informe a data</div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantidade *</label>
+                                    <input type="number" step="0.0001" class="form-control" id="quantity" required>
+                                    <div class="invalid-feedback">Por favor, informe a quantidade</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="value" class="form-label">Valor Unitário *</label>
+                                    <input type="number" step="0.01" class="form-control" id="value" required>
+                                    <div class="invalid-feedback">Por favor, informe o valor unitário</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tax" class="form-label">Taxas</label>
+                                    <input type="number" step="0.01" class="form-control" id="tax" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Data *</label>
+                                    <input type="date" class="form-control" id="date" required>
+                                    <div class="invalid-feedback">Por favor, informe a data</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Valor Total</label>
+                                    <input type="number" step="0.01" class="form-control" id="amount" readonly>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -116,305 +197,322 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-    // Configuração do Supabase
-    const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
-        db: {
-            schema: 'public'
-        }
-    });
+        // Configuração do Supabase
+        const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
+            db: {
+                schema: 'public'
+            }
+        });
 
-    // Variáveis globais
-    let transactions = [];
-    let currentEditId = null;
+        // Variáveis globais
+        let transactions = [];
+        let currentEditId = null;
 
-    // Inicialização quando o DOM estiver pronto
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Elementos DOM
-        const transactionsTable = document.getElementById('transactionsTable');
-        const transactionForm = document.getElementById('transactionForm');
-        const saveBtn = document.getElementById('saveBtn');
-        const loading = document.getElementById('loading');
-        
-        // Event Listeners
-        saveBtn.addEventListener('click', saveTransaction);
-        
-        // Carrega dados iniciais
-        await loadTransactions();
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Elementos DOM
+            const transactionsTable = document.getElementById('transactionsTable');
+            const transactionForm = document.getElementById('transactionForm');
+            const saveBtn = document.getElementById('saveBtn');
+            const loading = document.getElementById('loading');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            // Event Listeners
+            saveBtn.addEventListener('click', saveTransaction);
+            document.getElementById('quantity').addEventListener('input', calculateTotal);
+            document.getElementById('value').addEventListener('input', calculateTotal);
+            document.getElementById('tax').addEventListener('input', calculateTotal);
+            
+            // Carrega dados iniciais
+            await loadTransactions();
 
-        // Função para carregar transações
-        async function loadTransactions() {
-            showLoading(true);
-            try {
-                const { data, error } = await supabaseClient
-                    .from('transaction')
-                    .select(`
-                        id_transaction,
-                        date,
-                        quantity,
-                        value,
-                        tax,
-                        amount,
-                        brokerage: id_brokerage (name),
-                        transaction_type: id_transaction_type (name),
-                        ticker: id_ticker (ticker_name)
-                    `)
-                    .order('date', { ascending: false });
+            // Função para carregar transações
+            async function loadTransactions() {
+                showLoading(true);
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('transaction')
+                        .select(`
+                            id_transaction,
+                            date,
+                            quantity,
+                            value,
+                            tax,
+                            amount,
+                            brokerage: id_brokerage (name),
+                            transaction_type: id_transaction_type (name),
+                            ticker: id_ticker (ticker_name)
+                        `)
+                        .order('date', { ascending: false });
 
-                if (error) throw error;
+                    if (error) throw error;
+                    
+                    transactions = data || [];
+                    renderTransactions();
+                } catch (error) {
+                    console.error('Erro ao carregar transações:', error);
+                    showAlert('danger', 'Erro ao carregar transações');
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Função para renderizar transações
+            function renderTransactions() {
+                transactionsTable.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    transactionsTable.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma transação encontrada</td></tr>';
+                    return;
+                }
+
+                transactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.id_transaction}</td>
+                        <td>${formatDate(transaction.date)}</td>
+                        <td>${transaction.transaction_type?.name || 'N/A'}</td>
+                        <td>${transaction.brokerage?.name || 'N/A'}</td>
+                        <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
+                        <td>${formatNumber(transaction.quantity)}</td>
+                        <td>R$ ${formatNumber(transaction.value)}</td>
+                        <td>R$ ${formatNumber(transaction.tax || 0)}</td>
+                        <td>R$ ${formatNumber(transaction.amount)}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    transactionsTable.appendChild(row);
+                });
+
+                // Adiciona eventos aos botões
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => editTransaction(btn.dataset.id));
+                });
                 
-                transactions = data || [];
-                renderTransactions();
-            } catch (error) {
-                console.error('Erro ao carregar transações:', error);
-                showAlert('danger', 'Erro ao carregar transações');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Função para renderizar transações na tabela
-        function renderTransactions() {
-            transactionsTable.innerHTML = '';
-
-            if (transactions.length === 0) {
-                transactionsTable.innerHTML = '<tr><td colspan="9" class="text-center">Nenhuma transação encontrada</td></tr>';
-                return;
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (confirm('Tem certeza que deseja excluir esta transação?')) {
+                            deleteTransaction(btn.dataset.id);
+                        }
+                    });
+                });
             }
 
-            transactions.forEach(transaction => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${transaction.id_transaction}</td>
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.transaction_type?.name || 'N/A'}</td>
-                    <td>${transaction.brokerage?.name || 'N/A'}</td>
-                    <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
-                    <td>${formatNumber(transaction.quantity)}</td>
-                    <td>R$ ${formatNumber(transaction.value)}</td>
-                    <td>R$ ${formatNumber(transaction.amount)}</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
+            // Função para salvar transação
+            async function saveTransaction() {
+                const form = document.getElementById('transactionForm');
+                
+                // Valida o formulário
+                form.classList.add('was-validated');
+                if (!form.checkValidity()) {
+                    return;
+                }
+
+                showLoading(true);
+                
+                try {
+                    const transactionData = {
+                        id_transaction_type: document.getElementById('transactionType').value,
+                        id_brokerage: document.getElementById('brokerage').value,
+                        quantity: parseFloat(document.getElementById('quantity').value),
+                        value: parseFloat(document.getElementById('value').value),
+                        tax: parseFloat(document.getElementById('tax').value) || 0,
+                        date: document.getElementById('date').value,
+                        id_ticker: await getOrCreateTickerId(
+                            document.getElementById('ticker').value.trim(),
+                            document.getElementById('assetClass').value
+                        )
+                    };
+
+                    if (currentEditId) {
+                        // Edição
+                        const { error } = await supabaseClient
+                            .from('transaction')
+                            .update(transactionData)
+                            .eq('id_transaction', currentEditId);
+                        
+                        if (error) throw error;
+                        showAlert('success', 'Transação atualizada com sucesso!');
+                    } else {
+                        // Criação
+                        const { error } = await supabaseClient
+                            .from('transaction')
+                            .insert([transactionData]);
+                        
+                        if (error) throw error;
+                        showAlert('success', 'Transação criada com sucesso!');
+                    }
+                    
+                    // Recarrega e fecha modal
+                    await loadTransactions();
+                    bootstrap.Modal.getInstance(document.getElementById('transactionModal')).hide();
+                    resetForm();
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar transação:', error);
+                    showAlert('danger', 'Erro ao salvar transação: ' + error.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Função auxiliar para obter ou criar ticker
+            async function getOrCreateTickerId(tickerName, assetClassId) {
+                // Verifica se o ticker já existe
+                let { data: ticker, error } = await supabaseClient
+                    .from('ticker')
+                    .select('id_ticker')
+                    .eq('ticker_name', tickerName)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // PGRST116 = nenhum resultado encontrado
+                    throw error;
+                }
+
+                // Se não existir, cria um novo
+                if (!ticker) {
+                    const { data: newTicker, error: newError } = await supabaseClient
+                        .from('ticker')
+                        .insert([
+                            { 
+                                ticker_name: tickerName,
+                                id_class: assetClassId
+                            }
+                        ])
+                        .select()
+                        .single();
+
+                    if (newError) throw newError;
+                    return newTicker.id_ticker;
+                }
+
+                return ticker.id_ticker;
+            }
+
+            // Função para editar transação
+            async function editTransaction(id) {
+                currentEditId = id;
+                const transaction = transactions.find(t => t.id_transaction == id);
+                
+                if (!transaction) return;
+                
+                try {
+                    // Busca informações do ticker
+                    const { data: tickerData, error: tickerError } = await supabaseClient
+                        .from('ticker')
+                        .select('id_ticker, ticker_name, id_class')
+                        .eq('ticker_name', transaction.ticker?.ticker_name || '')
+                        .single();
+
+                    if (tickerError && tickerError.code !== 'PGRST116') throw tickerError;
+                    
+                    // Preenche o formulário
+                    document.getElementById('transactionType').value = transaction.id_transaction_type;
+                    document.getElementById('brokerage').value = transaction.id_brokerage;
+                    document.getElementById('ticker').value = transaction.ticker?.ticker_name || '';
+                    document.getElementById('assetClass').value = tickerData?.id_class || '';
+                    document.getElementById('quantity').value = transaction.quantity;
+                    document.getElementById('value').value = transaction.value;
+                    document.getElementById('tax').value = transaction.tax || 0;
+                    document.getElementById('date').value = transaction.date.split('T')[0];
+                    document.getElementById('transactionId').value = id;
+                    
+                    // Atualiza o título do modal
+                    modalTitle.textContent = 'Editar Transação';
+                    
+                    // Abre o modal
+                    const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+                    modal.show();
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar dados para edição:', error);
+                    showAlert('danger', 'Erro ao carregar dados para edição');
+                }
+            }
+
+            // Função para excluir transação
+            async function deleteTransaction(id) {
+                showLoading(true);
+                try {
+                    const { error } = await supabaseClient
+                        .from('transaction')
+                        .delete()
+                        .eq('id_transaction', id);
+                    
+                    if (error) throw error;
+                    
+                    showAlert('success', 'Transação excluída com sucesso!');
+                    await loadTransactions();
+                } catch (error) {
+                    console.error('Erro ao excluir transação:', error);
+                    showAlert('danger', 'Erro ao excluir transação');
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Função para calcular o valor total
+            function calculateTotal() {
+                const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+                const value = parseFloat(document.getElementById('value').value) || 0;
+                const tax = parseFloat(document.getElementById('tax').value) || 0;
+                
+                const total = (quantity * value) + tax;
+                document.getElementById('amount').value = total.toFixed(2);
+            }
+
+            // Função para resetar o formulário
+            function resetForm() {
+                document.getElementById('transactionForm').reset();
+                document.getElementById('transactionForm').classList.remove('was-validated');
+                document.getElementById('transactionId').value = '';
+                modalTitle.textContent = 'Nova Transação';
+                currentEditId = null;
+            }
+
+            // Função para mostrar/ocultar loading
+            function showLoading(show) {
+                loading.style.display = show ? 'flex' : 'none';
+            }
+
+            // Função para mostrar alertas
+            function showAlert(type, message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3`;
+                alertDiv.role = 'alert';
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 `;
                 
-                transactionsTable.appendChild(row);
-            });
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            }
 
-            // Adiciona eventos aos botões
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => editTransaction(e.target.closest('button').dataset.id));
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if (confirm('Tem certeza que deseja excluir esta transação?')) {
-                        deleteTransaction(e.target.closest('button').dataset.id);
-                    }
+            // Funções auxiliares de formatação
+            function formatNumber(value) {
+                return parseFloat(value).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 4
                 });
-            });
-        }
-
-        // Função para salvar transação (criação ou edição)
-        async function saveTransaction() {
-            const form = document.getElementById('transactionForm');
-            
-            // Valida o formulário
-            form.classList.add('was-validated');
-            if (!form.checkValidity()) {
-                return;
             }
 
-            showLoading(true);
-            
-            try {
-                const transactionData = {
-                    id_transaction_type: document.getElementById('transactionType').value,
-                    id_brokerage: document.getElementById('brokerage').value,
-                    quantity: parseFloat(document.getElementById('quantity').value),
-                    value: parseFloat(document.getElementById('value').value),
-                    tax: parseFloat(document.getElementById('tax').value) || 0,
-                    date: document.getElementById('date').value,
-                    id_ticker: await getOrCreateTickerId(
-                        document.getElementById('ticker').value.trim(),
-                        document.getElementById('assetClass').value
-                    )
-                };
-
-                if (currentEditId) {
-                    // Edição
-                    const { error } = await supabaseClient
-                        .from('transaction')
-                        .update(transactionData)
-                        .eq('id_transaction', currentEditId);
-                    
-                    if (error) throw error;
-                    showAlert('success', 'Transação atualizada com sucesso!');
-                } else {
-                    // Criação
-                    const { error } = await supabaseClient
-                        .from('transaction')
-                        .insert([transactionData]);
-                    
-                    if (error) throw error;
-                    showAlert('success', 'Transação criada com sucesso!');
-                }
-                
-                // Recarrega e fecha modal
-                await loadTransactions();
-                bootstrap.Modal.getInstance(document.getElementById('addTransactionModal')).hide();
-                resetForm();
-                
-            } catch (error) {
-                console.error('Erro ao salvar transação:', error);
-                showAlert('danger', 'Erro ao salvar transação: ' + error.message);
-            } finally {
-                showLoading(false);
+            function formatDate(dateString) {
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                return new Date(dateString).toLocaleDateString('pt-BR', options);
             }
-        }
-
-        // Função auxiliar para obter ou criar ticker
-        async function getOrCreateTickerId(tickerName, assetClassId) {
-            // Verifica se o ticker já existe
-            let { data: ticker, error } = await supabaseClient
-                .from('ticker')
-                .select('id_ticker')
-                .eq('ticker_name', tickerName)
-                .single();
-
-            if (error && error.code !== 'PGRST116') { // PGRST116 = nenhum resultado encontrado
-                throw error;
-            }
-
-            // Se não existir, cria um novo
-            if (!ticker) {
-                const { data: newTicker, error: newError } = await supabaseClient
-                    .from('ticker')
-                    .insert([
-                        { 
-                            ticker_name: tickerName,
-                            id_class: assetClassId
-                        }
-                    ])
-                    .select()
-                    .single();
-
-                if (newError) throw newError;
-                return newTicker.id_ticker;
-            }
-
-            return ticker.id_ticker;
-        }
-
-        // Função para editar transação
-        async function editTransaction(id) {
-            currentEditId = id;
-            const transaction = transactions.find(t => t.id_transaction == id);
-            
-            if (!transaction) return;
-            
-            try {
-                // Busca informações do ticker
-                const { data: tickerData, error: tickerError } = await supabaseClient
-                    .from('ticker')
-                    .select('id_ticker, ticker_name, id_class')
-                    .eq('ticker_name', transaction.ticker?.ticker_name || '')
-                    .single();
-
-                if (tickerError && tickerError.code !== 'PGRST116') throw tickerError;
-                
-                // Preenche o formulário
-                document.getElementById('transactionType').value = transaction.id_transaction_type;
-                document.getElementById('brokerage').value = transaction.id_brokerage;
-                document.getElementById('ticker').value = transaction.ticker?.ticker_name || '';
-                document.getElementById('assetClass').value = tickerData?.id_class || '';
-                document.getElementById('quantity').value = transaction.quantity;
-                document.getElementById('value').value = transaction.value;
-                document.getElementById('tax').value = transaction.tax || 0;
-                document.getElementById('date').value = transaction.date.split('T')[0];
-                document.getElementById('transactionId').value = id;
-                
-                // Atualiza o título do modal
-                document.getElementById('addTransactionModalLabel').textContent = 'Editar Transação';
-                
-                // Abre o modal
-                const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
-                modal.show();
-                
-            } catch (error) {
-                console.error('Erro ao carregar dados para edição:', error);
-                showAlert('danger', 'Erro ao carregar dados para edição');
-            }
-        }
-
-        // Função para excluir transação
-        async function deleteTransaction(id) {
-            showLoading(true);
-            try {
-                const { error } = await supabaseClient
-                    .from('transaction')
-                    .delete()
-                    .eq('id_transaction', id);
-                
-                if (error) throw error;
-                
-                showAlert('success', 'Transação excluída com sucesso!');
-                await loadTransactions();
-            } catch (error) {
-                console.error('Erro ao excluir transação:', error);
-                showAlert('danger', 'Erro ao excluir transação');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Funções auxiliares
-        function resetForm() {
-            document.getElementById('transactionForm').reset();
-            document.getElementById('transactionForm').classList.remove('was-validated');
-            document.getElementById('transactionId').value = '';
-            document.getElementById('addTransactionModalLabel').textContent = 'Nova Transação';
-            currentEditId = null;
-        }
-
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'flex' : 'none';
-        }
-
-        function showAlert(type, message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3`;
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        }
-
-        function formatNumber(value) {
-            return parseFloat(value).toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 4
-            });
-        }
-
-        function formatDate(dateString) {
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('pt-BR', options);
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
