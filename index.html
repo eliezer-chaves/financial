@@ -116,211 +116,305 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // Configuração do Supabase com nome de variável corrigido
-        const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
-            db: {
-                schema: 'public'
-            },
-            global: {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            }
-        });
+    // Configuração do Supabase
+    const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey, {
+        db: {
+            schema: 'public'
+        }
+    });
 
-        // Configuração e inicialização segura
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Elementos DOM
-            const transactionsTable = document.getElementById('transactionsTable');
-            const transactionForm = document.getElementById('transactionForm');
-            const saveBtn = document.getElementById('saveBtn');
-            const loading = document.getElementById('loading');
-            
-            // Variáveis de estado
-            let currentTransactionId = null;
-            
-            // Event Listeners
-            saveBtn.addEventListener('click', saveTransaction);
-            
-            // Carrega dados iniciais
-            await loadTransactions();
-            
-            // Funções principais
-            async function loadTransactions() {
-                showLoading(true);
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('transaction')
-                        .select('*')
-                        .order('date', { ascending: false });
-                    
-                    if (error) throw error;
-                    
-                    renderTransactions(data || []);
-                } catch (error) {
-                    console.error('Erro ao carregar:', error);
-                    alert('Erro ao carregar transações');
-                } finally {
-                    showLoading(false);
-                }
+    // Variáveis globais
+    let transactions = [];
+    let currentEditId = null;
+
+    // Inicialização quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Elementos DOM
+        const transactionsTable = document.getElementById('transactionsTable');
+        const transactionForm = document.getElementById('transactionForm');
+        const saveBtn = document.getElementById('saveBtn');
+        const loading = document.getElementById('loading');
+        
+        // Event Listeners
+        saveBtn.addEventListener('click', saveTransaction);
+        
+        // Carrega dados iniciais
+        await loadTransactions();
+
+        // Função para carregar transações
+        async function loadTransactions() {
+            showLoading(true);
+            try {
+                const { data, error } = await supabaseClient
+                    .from('transaction')
+                    .select(`
+                        id_transaction,
+                        date,
+                        quantity,
+                        value,
+                        tax,
+                        amount,
+                        brokerage: id_brokerage (name),
+                        transaction_type: id_transaction_type (name),
+                        ticker: id_ticker (ticker_name)
+                    `)
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+                
+                transactions = data || [];
+                renderTransactions();
+            } catch (error) {
+                console.error('Erro ao carregar transações:', error);
+                showAlert('danger', 'Erro ao carregar transações');
+            } finally {
+                showLoading(false);
             }
-            
-            function renderTransactions(transactions) {
-                transactionsTable.innerHTML = '';
-                
-                if (transactions.length === 0) {
-                    transactionsTable.innerHTML = '<tr><td colspan="5">Nenhuma transação</td></tr>';
-                    return;
-                }
-                
-                transactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.id}</td>
-                        <td>${new Date(transaction.date).toLocaleDateString()}</td>
-                        <td>${getTransactionTypeName(transaction.type)}</td>
-                        <td>R$ ${transaction.amount.toFixed(2)}</td>
-                        <td class="action-buttons">
-                            <button class="btn btn-sm btn-warning edit-btn" data-id="${transaction.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    transactionsTable.appendChild(row);
-                });
-                
-                // Adiciona eventos aos botões
-                document.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', () => editTransaction(btn.dataset.id));
-                });
-                
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', () => deleteTransaction(btn.dataset.id));
-                });
+        }
+
+        // Função para renderizar transações na tabela
+        function renderTransactions() {
+            transactionsTable.innerHTML = '';
+
+            if (transactions.length === 0) {
+                transactionsTable.innerHTML = '<tr><td colspan="9" class="text-center">Nenhuma transação encontrada</td></tr>';
+                return;
             }
+
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${transaction.id_transaction}</td>
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.transaction_type?.name || 'N/A'}</td>
+                    <td>${transaction.brokerage?.name || 'N/A'}</td>
+                    <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
+                    <td>${formatNumber(transaction.quantity)}</td>
+                    <td>R$ ${formatNumber(transaction.value)}</td>
+                    <td>R$ ${formatNumber(transaction.amount)}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                transactionsTable.appendChild(row);
+            });
+
+            // Adiciona eventos aos botões
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => editTransaction(e.target.closest('button').dataset.id));
+            });
             
-            async function saveTransaction() {
-                if (!transactionForm.checkValidity()) {
-                    transactionForm.classList.add('was-validated');
-                    return;
-                }
-                
-                showLoading(true);
-                
-                try {
-                    const transactionData = {
-                        type: document.getElementById('transactionType').value,
-                        amount: parseFloat(document.getElementById('amount').value),
-                        date: document.getElementById('date').value
-                    };
-                    
-                    if (currentTransactionId) {
-                        // Edição
-                        const { error } = await supabaseClient
-                            .from('transaction')
-                            .update(transactionData)
-                            .eq('id', currentTransactionId);
-                        
-                        if (error) throw error;
-                    } else {
-                        // Criação
-                        const { error } = await supabaseClient
-                            .from('transaction')
-                            .insert([transactionData]);
-                        
-                        if (error) throw error;
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (confirm('Tem certeza que deseja excluir esta transação?')) {
+                        deleteTransaction(e.target.closest('button').dataset.id);
                     }
-                    
-                    // Recarrega e fecha modal
-                    await loadTransactions();
-                    bootstrap.Modal.getInstance(document.getElementById('transactionModal')).hide();
-                    resetForm();
-                    
-                } catch (error) {
-                    console.error('Erro ao salvar:', error);
-                    alert('Erro ao salvar transação');
-                } finally {
-                    showLoading(false);
-                }
-            }
+                });
+            });
+        }
+
+        // Função para salvar transação (criação ou edição)
+        async function saveTransaction() {
+            const form = document.getElementById('transactionForm');
             
-            async function editTransaction(id) {
-                showLoading(true);
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('transaction')
-                        .select('*')
-                        .eq('id', id)
-                        .single();
-                    
-                    if (error) throw error;
-                    
-                    // Preenche formulário
-                    document.getElementById('transactionType').value = data.type;
-                    document.getElementById('amount').value = data.amount;
-                    document.getElementById('date').value = data.date.split('T')[0];
-                    document.getElementById('transactionId').value = data.id;
-                    currentTransactionId = data.id;
-                    
-                    // Abre modal
-                    const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
-                    modal.show();
-                    
-                } catch (error) {
-                    console.error('Erro ao editar:', error);
-                    alert('Erro ao carregar transação');
-                } finally {
-                    showLoading(false);
-                }
+            // Valida o formulário
+            form.classList.add('was-validated');
+            if (!form.checkValidity()) {
+                return;
             }
+
+            showLoading(true);
             
-            async function deleteTransaction(id) {
-                if (!confirm('Confirmar exclusão?')) return;
-                
-                showLoading(true);
-                try {
+            try {
+                const transactionData = {
+                    id_transaction_type: document.getElementById('transactionType').value,
+                    id_brokerage: document.getElementById('brokerage').value,
+                    quantity: parseFloat(document.getElementById('quantity').value),
+                    value: parseFloat(document.getElementById('value').value),
+                    tax: parseFloat(document.getElementById('tax').value) || 0,
+                    date: document.getElementById('date').value,
+                    id_ticker: await getOrCreateTickerId(
+                        document.getElementById('ticker').value.trim(),
+                        document.getElementById('assetClass').value
+                    )
+                };
+
+                if (currentEditId) {
+                    // Edição
                     const { error } = await supabaseClient
                         .from('transaction')
-                        .delete()
-                        .eq('id', id);
+                        .update(transactionData)
+                        .eq('id_transaction', currentEditId);
                     
                     if (error) throw error;
+                    showAlert('success', 'Transação atualizada com sucesso!');
+                } else {
+                    // Criação
+                    const { error } = await supabaseClient
+                        .from('transaction')
+                        .insert([transactionData]);
                     
-                    await loadTransactions();
-                } catch (error) {
-                    console.error('Erro ao excluir:', error);
-                    alert('Erro ao excluir transação');
-                } finally {
-                    showLoading(false);
+                    if (error) throw error;
+                    showAlert('success', 'Transação criada com sucesso!');
                 }
+                
+                // Recarrega e fecha modal
+                await loadTransactions();
+                bootstrap.Modal.getInstance(document.getElementById('addTransactionModal')).hide();
+                resetForm();
+                
+            } catch (error) {
+                console.error('Erro ao salvar transação:', error);
+                showAlert('danger', 'Erro ao salvar transação: ' + error.message);
+            } finally {
+                showLoading(false);
             }
+        }
+
+        // Função auxiliar para obter ou criar ticker
+        async function getOrCreateTickerId(tickerName, assetClassId) {
+            // Verifica se o ticker já existe
+            let { data: ticker, error } = await supabaseClient
+                .from('ticker')
+                .select('id_ticker')
+                .eq('ticker_name', tickerName)
+                .single();
+
+            if (error && error.code !== 'PGRST116') { // PGRST116 = nenhum resultado encontrado
+                throw error;
+            }
+
+            // Se não existir, cria um novo
+            if (!ticker) {
+                const { data: newTicker, error: newError } = await supabaseClient
+                    .from('ticker')
+                    .insert([
+                        { 
+                            ticker_name: tickerName,
+                            id_class: assetClassId
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (newError) throw newError;
+                return newTicker.id_ticker;
+            }
+
+            return ticker.id_ticker;
+        }
+
+        // Função para editar transação
+        async function editTransaction(id) {
+            currentEditId = id;
+            const transaction = transactions.find(t => t.id_transaction == id);
             
-            function resetForm() {
-                transactionForm.reset();
-                transactionForm.classList.remove('was-validated');
-                currentTransactionId = null;
-            }
+            if (!transaction) return;
             
-            function showLoading(show) {
-                loading.style.display = show ? 'flex' : 'none';
+            try {
+                // Busca informações do ticker
+                const { data: tickerData, error: tickerError } = await supabaseClient
+                    .from('ticker')
+                    .select('id_ticker, ticker_name, id_class')
+                    .eq('ticker_name', transaction.ticker?.ticker_name || '')
+                    .single();
+
+                if (tickerError && tickerError.code !== 'PGRST116') throw tickerError;
+                
+                // Preenche o formulário
+                document.getElementById('transactionType').value = transaction.id_transaction_type;
+                document.getElementById('brokerage').value = transaction.id_brokerage;
+                document.getElementById('ticker').value = transaction.ticker?.ticker_name || '';
+                document.getElementById('assetClass').value = tickerData?.id_class || '';
+                document.getElementById('quantity').value = transaction.quantity;
+                document.getElementById('value').value = transaction.value;
+                document.getElementById('tax').value = transaction.tax || 0;
+                document.getElementById('date').value = transaction.date.split('T')[0];
+                document.getElementById('transactionId').value = id;
+                
+                // Atualiza o título do modal
+                document.getElementById('addTransactionModalLabel').textContent = 'Editar Transação';
+                
+                // Abre o modal
+                const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados para edição:', error);
+                showAlert('danger', 'Erro ao carregar dados para edição');
             }
+        }
+
+        // Função para excluir transação
+        async function deleteTransaction(id) {
+            showLoading(true);
+            try {
+                const { error } = await supabaseClient
+                    .from('transaction')
+                    .delete()
+                    .eq('id_transaction', id);
+                
+                if (error) throw error;
+                
+                showAlert('success', 'Transação excluída com sucesso!');
+                await loadTransactions();
+            } catch (error) {
+                console.error('Erro ao excluir transação:', error);
+                showAlert('danger', 'Erro ao excluir transação');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Funções auxiliares
+        function resetForm() {
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionForm').classList.remove('was-validated');
+            document.getElementById('transactionId').value = '';
+            document.getElementById('addTransactionModalLabel').textContent = 'Nova Transação';
+            currentEditId = null;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
             
-            function getTransactionTypeName(type) {
-                const types = {
-                    1: 'Venda',
-                    2: 'Compra',
-                    3: 'Aporte',
-                    4: 'Proventos'
-                };
-                return types[type] || 'Desconhecido';
-            }
-        });
-    </script>
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function formatNumber(value) {
+            return parseFloat(value).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+        }
+
+        function formatDate(dateString) {
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('pt-BR', options);
+        }
+    });
+</script>
 </body>
 </html>
