@@ -57,7 +57,7 @@
 
         <div class="table-responsive">
             <table class="table table-striped">
-                <thead class="table-dark">
+                <thead class="table-dark text-center">
                     <tr>
                         <th>ID</th>
                         <th>Data</th>
@@ -250,10 +250,10 @@ async function loadTransactions() {
                 ticker: id_ticker (ticker_name)
             `)
             .order('date', { ascending: false });
-
         if (error) throw error;
         
         transactions = data || [];
+        console.log(transactions)
         renderTransactions();
     } catch (error) {
         console.error('Erro ao carregar transações:', error);
@@ -273,8 +273,9 @@ function renderTransactions() {
     }
 
     transactions.forEach(transaction => {
-    console.log(transaction.brokerage)
-            console.log(transaction.id_brokerage(name))
+        console.log(transaction.brokerage)
+        console.log(transaction.id_brokerage(name))
+        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${transaction.id_transaction}</td>
