@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Transações Financeiras</title>
+    <title>Gestão Financeira</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -13,9 +13,17 @@
             background-color: #f8f9fa;
             padding-top: 20px;
         }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
         }
         .table-responsive {
             margin-top: 20px;
@@ -23,20 +31,10 @@
         .action-buttons {
             white-space: nowrap;
         }
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        .was-validated .form-control:invalid, .form-control.is-invalid {
-            border-color: #dc3545;
-        }
         .invalid-feedback {
             display: none;
-            width: 100%;
-            margin-top: 0.25rem;
-            font-size: 0.875em;
             color: #dc3545;
+            font-size: 0.875em;
         }
         .was-validated .form-control:invalid ~ .invalid-feedback {
             display: block;
@@ -45,524 +43,274 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-4">Gestão de Transações Financeiras</h1>
+        <h1 class="text-center mb-4">Gestão de Transações</h1>
         
-        <div class="row">
-            <div class="col-md-12">
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
-                    <i class="fas fa-plus"></i> Nova Transação
-                </button>
-            </div>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
-            </div>
-            <p>Carregando transações...</p>
-        </div>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#transactionModal">
+            <i class="fas fa-plus"></i> Nova Transação
+        </button>
 
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
+            <table class="table table-striped">
+                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Data</th>
                         <th>Tipo</th>
-                        <th>Corretora</th>
-                        <th>Ticker</th>
-                        <th>Quantidade</th>
-                        <th>Valor Unit.</th>
-                        <th>Total</th>
+                        <th>Valor</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="transactionsTable">
-                    <!-- Dados serão inseridos via JavaScript -->
-                </tbody>
+                <tbody id="transactionsTable"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Modal Adicionar Transação -->
-    <div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <!-- Modal -->
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addTransactionModalLabel">Nova Transação</h5>
+                    <h5 class="modal-title">Nova Transação</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="transactionForm" class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="transactionType" class="form-label">Tipo de Transação *</label>
-                                    <select class="form-select" id="transactionType" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="1">Venda</option>
-                                        <option value="2">Compra</option>
-                                        <option value="3">Aporte</option>
-                                        <option value="4">Proventos</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Por favor, selecione o tipo de transação.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="brokerage" class="form-label">Corretora *</label>
-                                    <select class="form-select" id="brokerage" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="2">Rico</option>
-                                        <option value="3">Inter</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Por favor, selecione a corretora.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="ticker" class="form-label">Ticker *</label>
-                                    <input type="text" class="form-control" id="ticker" required>
-                                    <div class="invalid-feedback">
-                                        Por favor, informe o ticker.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="assetClass" class="form-label">Classe do Ativo *</label>
-                                    <select class="form-select" id="assetClass" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="1">Fundo Imobiliário</option>
-                                        <option value="2">Ação</option>
-                                        <option value="3">Aporte</option>
-                                        <option value="4">Dividendo</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Por favor, selecione a classe do ativo.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="quantity" class="form-label">Quantidade *</label>
-                                    <input type="number" step="0.0001" class="form-control" id="quantity" required>
-                                    <div class="invalid-feedback">
-                                        Por favor, informe a quantidade.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="value" class="form-label">Valor Unitário *</label>
-                                    <input type="number" step="0.01" class="form-control" id="value" required>
-                                    <div class="invalid-feedback">
-                                        Por favor, informe o valor unitário.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="tax" class="form-label">Taxas</label>
-                                    <input type="number" step="0.01" class="form-control" id="tax" value="0">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="date" class="form-label">Data *</label>
-                                    <input type="date" class="form-control" id="date" required>
-                                    <div class="invalid-feedback">
-                                        Por favor, informe a data.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="amount" class="form-label">Valor Total</label>
-                                    <input type="number" step="0.01" class="form-control" id="amount" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <input type="hidden" id="transactionId">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="transactionType" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">Venda</option>
+                                <option value="2">Compra</option>
+                            </select>
+                            <div class="invalid-feedback">Selecione o tipo</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" required>
+                            <div class="invalid-feedback">Informe o valor</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" id="date" required>
+                            <div class="invalid-feedback">Informe a data</div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveTransaction">Salvar</button>
+                    <button type="button" class="btn btn-primary" id="saveBtn">Salvar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS e Popper.js -->
+    <div class="loading" id="loading">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // Configuração do Supabase
-       
-
-        // Variáveis globais
-        let transactions = [];
-        let currentEditId = null;
-
+        // Configuração e inicialização segura
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Inicializa o Supabase DENTRO do DOMContentLoaded
+            // 1. Inicializa Supabase
             const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
-            window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
             
-            // 2. Variáveis globais
-            window.transactions = [];
-            window.currentEditId = null;
-
-            // 3. Verifica se o Supabase foi inicializado
-            if (!window.supabase) {
-                console.error('Supabase não foi inicializado corretamente');
-                return;
-            }
-
-            // 4. Agora executa suas funções
+            // 2. Elementos DOM
+            const transactionsTable = document.getElementById('transactionsTable');
+            const transactionForm = document.getElementById('transactionForm');
+            const saveBtn = document.getElementById('saveBtn');
+            const loading = document.getElementById('loading');
+            
+            // 3. Variáveis de estado
+            let currentTransactionId = null;
+            
+            // 4. Event Listeners
+            saveBtn.addEventListener('click', saveTransaction);
+            
+            // 5. Carrega dados iniciais
             await loadTransactions();
-            setupEventListeners();
-
-            // 5. Todas as outras funções continuam aqui...
+            
+            // Funções principais
             async function loadTransactions() {
                 showLoading(true);
                 try {
-                    const { data, error } = await window.supabase
+                    const { data, error } = await supabase
                         .from('transaction')
-                        .select(`...`);
-                    // Restante da função
+                        .select('*')
+                        .order('date', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    renderTransactions(data || []);
                 } catch (error) {
-                    console.error('Erro:', error);
+                    console.error('Erro ao carregar:', error);
+                    alert('Erro ao carregar transações');
                 } finally {
                     showLoading(false);
                 }
             }
-            // Carrega as transações ao iniciar
-            loadTransactions();
-
-            // Configura eventos
-            setupEventListeners();
-        });
-
-        // Configura os listeners de eventos
-        function setupEventListeners() {
-            // Calcula valor total quando quantidade ou valor unitário muda
-            document.getElementById('quantity').addEventListener('input', calculateTotal);
-            document.getElementById('value').addEventListener('input', calculateTotal);
             
-            // Salva a transação
-            document.getElementById('saveTransaction').addEventListener('click', saveTransaction);
-            
-            // Limpa o modal quando fecha
-            document.getElementById('addTransactionModal').addEventListener('hidden.bs.modal', resetForm);
-        }
-
-        // Carrega as transações do Supabase
-        async function loadTransactions() {
-            showLoading(true);
-            
-            try {
-                const { data, error } = await supabase
-                    .from('transaction')
-                    .select(`
-                        id_transaction,
-                        date,
-                        quantity,
-                        value,
-                        tax,
-                        amount,
-                        brokerage: id_brokerage (name),
-                        transaction_type: id_transaction_type (name),
-                        ticker: id_ticker (ticker_name)
-                    `)
-                    .order('date', { ascending: false });
-
-                if (error) throw error;
+            function renderTransactions(transactions) {
+                transactionsTable.innerHTML = '';
                 
-                transactions = data || [];
-                renderTransactions();
-            } catch (error) {
-                console.error('Erro ao carregar transações:', error);
-                alert('Erro ao carregar transações. Verifique o console para mais detalhes.');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Renderiza as transações na tabela
-        function renderTransactions() {
-            const tableBody = document.getElementById('transactionsTable');
-            tableBody.innerHTML = '';
-
-            if (transactions.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhuma transação encontrada</td></tr>';
-                return;
-            }
-
-            transactions.forEach(transaction => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${transaction.id_transaction}</td>
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.transaction_type?.name || 'N/A'}</td>
-                    <td>${transaction.brokerage?.name || 'N/A'}</td>
-                    <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
-                    <td>${formatNumber(transaction.quantity)}</td>
-                    <td>R$ ${formatNumber(transaction.value)}</td>
-                    <td>R$ ${formatNumber(transaction.amount)}</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
+                if (transactions.length === 0) {
+                    transactionsTable.innerHTML = '<tr><td colspan="5">Nenhuma transação</td></tr>';
+                    return;
+                }
                 
-                tableBody.appendChild(row);
-            });
-
-            // Adiciona eventos aos botões de edição e exclusão
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => editTransaction(e.target.closest('button').dataset.id));
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if (confirm('Tem certeza que deseja excluir esta transação?')) {
-                        deleteTransaction(e.target.closest('button').dataset.id);
-                    }
+                transactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.id}</td>
+                        <td>${new Date(transaction.date).toLocaleDateString()}</td>
+                        <td>${getTransactionTypeName(transaction.type)}</td>
+                        <td>R$ ${transaction.amount.toFixed(2)}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-warning edit-btn" data-id="${transaction.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    transactionsTable.appendChild(row);
                 });
-            });
-        }
-
-        // Formata números para exibição
-        function formatNumber(value) {
-            return parseFloat(value).toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 4
-            });
-        }
-
-        // Formata datas para exibição
-        function formatDate(dateString) {
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('pt-BR', options);
-        }
-
-        // Calcula o valor total da transação
-        function calculateTotal() {
-            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-            const value = parseFloat(document.getElementById('value').value) || 0;
-            const tax = parseFloat(document.getElementById('tax').value) || 0;
-            
-            const total = (quantity * value) + tax;
-            document.getElementById('amount').value = total.toFixed(2);
-        }
-
-        // Preenche o formulário para edição
-        async function editTransaction(id) {
-            currentEditId = id;
-            const transaction = transactions.find(t => t.id_transaction == id);
-            
-            if (!transaction) return;
-            
-            try {
-                // Busca informações do ticker
-                const { data: tickerData, error: tickerError } = await supabase
-                    .from('ticker')
-                    .select('id_ticker, ticker_name, id_class')
-                    .eq('ticker_name', transaction.ticker?.ticker_name || '')
-                    .single();
-
-                if (tickerError && tickerError.code !== 'PGRST116') throw tickerError;
                 
-                // Preenche o formulário
-                document.getElementById('transactionType').value = transaction.id_transaction_type;
-                document.getElementById('brokerage').value = transaction.id_brokerage;
-                document.getElementById('ticker').value = transaction.ticker?.ticker_name || '';
-                document.getElementById('assetClass').value = tickerData?.id_class || '';
-                document.getElementById('quantity').value = transaction.quantity;
-                document.getElementById('value').value = transaction.value;
-                document.getElementById('tax').value = transaction.tax || 0;
-                document.getElementById('amount').value = transaction.amount;
-                document.getElementById('date').value = transaction.date.split('T')[0];
-                document.getElementById('transactionId').value = id;
+                // Adiciona eventos aos botões
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => editTransaction(btn.dataset.id));
+                });
                 
-                // Atualiza o título do modal
-                document.getElementById('addTransactionModalLabel').textContent = 'Editar Transação';
-                
-                // Abre o modal
-                const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
-                modal.show();
-                
-            } catch (error) {
-                console.error('Erro ao carregar dados para edição:', error);
-                alert('Erro ao carregar dados para edição. Verifique o console para mais detalhes.');
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => deleteTransaction(btn.dataset.id));
+                });
             }
-        }
-
-        // Salva a transação (cria ou atualiza)
-        async function saveTransaction() {
-            const form = document.getElementById('transactionForm');
             
-            // Valida o formulário
-            form.classList.add('was-validated');
-            if (!form.checkValidity()) {
-                return;
-            }
-
-            showLoading(true);
-            
-            try {
-                const transactionData = {
-                    id_transaction_type: document.getElementById('transactionType').value,
-                    id_brokerage: document.getElementById('brokerage').value,
-                    quantity: parseFloat(document.getElementById('quantity').value),
-                    value: parseFloat(document.getElementById('value').value),
-                    tax: parseFloat(document.getElementById('tax').value) || 0,
-                    amount: parseFloat(document.getElementById('amount').value),
-                    date: document.getElementById('date').value,
-                };
-
-                const tickerName = document.getElementById('ticker').value.trim();
-                const assetClass = document.getElementById('assetClass').value;
-                
-                // Verifica/insere o ticker
-                let { data: ticker, error: tickerError } = await supabase
-                    .from('ticker')
-                    .select('id_ticker')
-                    .eq('ticker_name', tickerName)
-                    .single();
-
-                if (tickerError && tickerError.code !== 'PGRST116') {
-                    throw tickerError;
+            async function saveTransaction() {
+                if (!transactionForm.checkValidity()) {
+                    transactionForm.classList.add('was-validated');
+                    return;
                 }
-
-                if (!ticker) {
-                    // Cria um novo ticker se não existir
-                    const { data: newTicker, error: newTickerError } = await supabase
-                        .from('ticker')
-                        .insert([
-                            { 
-                                ticker_name: tickerName,
-                                id_class: assetClass
-                            }
-                        ])
-                        .select()
+                
+                showLoading(true);
+                
+                try {
+                    const transactionData = {
+                        type: document.getElementById('transactionType').value,
+                        amount: parseFloat(document.getElementById('amount').value),
+                        date: document.getElementById('date').value
+                    };
+                    
+                    if (currentTransactionId) {
+                        // Edição
+                        const { error } = await supabase
+                            .from('transaction')
+                            .update(transactionData)
+                            .eq('id', currentTransactionId);
+                        
+                        if (error) throw error;
+                    } else {
+                        // Criação
+                        const { error } = await supabase
+                            .from('transaction')
+                            .insert([transactionData]);
+                        
+                        if (error) throw error;
+                    }
+                    
+                    // Recarrega e fecha modal
+                    await loadTransactions();
+                    bootstrap.Modal.getInstance(document.getElementById('transactionModal')).hide();
+                    resetForm();
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar:', error);
+                    alert('Erro ao salvar transação');
+                } finally {
+                    showLoading(false);
+                }
+            }
+            
+            async function editTransaction(id) {
+                showLoading(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('transaction')
+                        .select('*')
+                        .eq('id', id)
                         .single();
-
-                    if (newTickerError) throw newTickerError;
-                    ticker = newTicker;
-                }
-
-                transactionData.id_ticker = ticker.id_ticker;
-                
-                // Se estiver editando
-                if (currentEditId) {
-                    const { error } = await supabase
-                        .from('transaction')
-                        .update(transactionData)
-                        .eq('id_transaction', currentEditId);
                     
                     if (error) throw error;
-                    showAlert('success', 'Transação atualizada com sucesso!');
-                } else {
-                    // Se estiver criando
+                    
+                    // Preenche formulário
+                    document.getElementById('transactionType').value = data.type;
+                    document.getElementById('amount').value = data.amount;
+                    document.getElementById('date').value = data.date.split('T')[0];
+                    document.getElementById('transactionId').value = data.id;
+                    currentTransactionId = data.id;
+                    
+                    // Abre modal
+                    const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+                    modal.show();
+                    
+                } catch (error) {
+                    console.error('Erro ao editar:', error);
+                    alert('Erro ao carregar transação');
+                } finally {
+                    showLoading(false);
+                }
+            }
+            
+            async function deleteTransaction(id) {
+                if (!confirm('Confirmar exclusão?')) return;
+                
+                showLoading(true);
+                try {
                     const { error } = await supabase
                         .from('transaction')
-                        .insert([transactionData]);
+                        .delete()
+                        .eq('id', id);
                     
                     if (error) throw error;
-                    showAlert('success', 'Transação criada com sucesso!');
+                    
+                    await loadTransactions();
+                } catch (error) {
+                    console.error('Erro ao excluir:', error);
+                    alert('Erro ao excluir transação');
+                } finally {
+                    showLoading(false);
                 }
-                
-                // Recarrega as transações e fecha o modal
-                await loadTransactions();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addTransactionModal'));
-                modal.hide();
-                
-            } catch (error) {
-                console.error('Erro ao salvar transação:', error);
-                showAlert('danger', 'Erro ao salvar transação. Verifique o console para mais detalhes.');
-            } finally {
-                showLoading(false);
             }
-        }
-
-        // Deleta uma transação
-        async function deleteTransaction(id) {
-            showLoading(true);
             
-            try {
-                const { error } = await supabase
-                    .from('transaction')
-                    .delete()
-                    .eq('id_transaction', id);
-                
-                if (error) throw error;
-                
-                showAlert('success', 'Transação excluída com sucesso!');
-                await loadTransactions();
-            } catch (error) {
-                console.error('Erro ao excluir transação:', error);
-                showAlert('danger', 'Erro ao excluir transação. Verifique o console para mais detalhes.');
-            } finally {
-                showLoading(false);
+            function resetForm() {
+                transactionForm.reset();
+                transactionForm.classList.remove('was-validated');
+                currentTransactionId = null;
             }
-        }
-
-        // Mostra mensagem de alerta
-        function showAlert(type, message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3`;
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            `;
             
-            document.body.appendChild(alertDiv);
+            function showLoading(show) {
+                loading.style.display = show ? 'flex' : 'none';
+            }
             
-            // Remove o alerta após 5 segundos
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        }
-
-        // Reseta o formulário
-        function resetForm() {
-            document.getElementById('transactionForm').reset();
-            document.getElementById('transactionForm').classList.remove('was-validated');
-            document.getElementById('transactionId').value = '';
-            document.getElementById('addTransactionModalLabel').textContent = 'Nova Transação';
-            currentEditId = null;
-        }
-
-        // Mostra/oculta o loading
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
+            function getTransactionTypeName(type) {
+                const types = {
+                    1: 'Venda',
+                    2: 'Compra',
+                    3: 'Aporte',
+                    4: 'Proventos'
+                };
+                return types[type] || 'Desconhecido';
+            }
+        });
     </script>
 </body>
 </html>
