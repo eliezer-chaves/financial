@@ -279,6 +279,9 @@ function renderTransactions() {
             <td>${formatDate(transaction.date)}</td>
             <td>${transaction.transaction_type?.name || 'N/A'}</td>
             <td>${transaction.brokerage?.name || 'N/A'}</td>
+            console.log(transaction.brokerage)
+            console.log(transaction.id_brokerage(name))
+            
             <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
             <td>${formatNumber(transaction.quantity)}</td>
             <td>R$ ${formatNumber(transaction.value)}</td>
