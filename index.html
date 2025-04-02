@@ -230,6 +230,7 @@
 
             // Função para carregar transações
             // Na função loadTransactions(), atualize a consulta para:
+// Na função loadTransactions(), atualize para:
 async function loadTransactions() {
     showLoading(true);
     try {
@@ -242,17 +243,16 @@ async function loadTransactions() {
                 value,
                 tax,
                 amount,
-                id_brokerage: id_brokerage (name),
-                id_transaction_type,
+                brokerage: id_brokerage (name),
                 transaction_type: id_transaction_type (name),
-                id_ticker,
                 ticker: id_ticker (ticker_name)
             `)
             .order('date', { ascending: false });
+
         if (error) throw error;
         
         transactions = data || [];
-        console.log(transactions)
+        console.log("Dados das transações:", transactions); // Para debug
         renderTransactions();
     } catch (error) {
         console.error('Erro ao carregar transações:', error);
@@ -272,17 +272,12 @@ function renderTransactions() {
     }
 
     transactions.forEach(transaction => {
-        console.log(transaction.brokerage)
-        console.log(transaction.id_brokerage(name))
-        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${transaction.id_transaction}</td>
             <td>${formatDate(transaction.date)}</td>
             <td>${transaction.transaction_type?.name || 'N/A'}</td>
             <td>${transaction.brokerage?.name || 'N/A'}</td>
-            
-            
             <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
             <td>${formatNumber(transaction.quantity)}</td>
             <td>R$ ${formatNumber(transaction.value)}</td>
@@ -299,54 +294,20 @@ function renderTransactions() {
         `;
         transactionsTable.appendChild(row);
     });
+
+    // Adiciona eventos aos botões
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => editTransaction(btn.dataset.id));
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja excluir esta transação?')) {
+                deleteTransaction(btn.dataset.id);
             }
-
-            // Função para renderizar transações
-            function renderTransactions() {
-                transactionsTable.innerHTML = '';
-
-                if (transactions.length === 0) {
-                    transactionsTable.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma transação encontrada</td></tr>';
-                    return;
-                }
-
-                transactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.id_transaction}</td>
-                        <td>${formatDate(transaction.date)}</td>
-                        <td>${transaction.transaction_type?.name || 'N/A'}</td>
-                        <td>${transaction.brokerage?.name || 'N/A'}</td>
-                        <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
-                        <td>${formatNumber(transaction.quantity)}</td>
-                        <td>R$ ${formatNumber(transaction.value)}</td>
-                        <td>R$ ${formatNumber(transaction.tax || 0)}</td>
-                        <td>R$ ${formatNumber(transaction.amount)}</td>
-                        <td class="action-buttons">
-                            <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    transactionsTable.appendChild(row);
-                });
-
-                // Adiciona eventos aos botões
-                document.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', () => editTransaction(btn.dataset.id));
-                });
-                
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        if (confirm('Tem certeza que deseja excluir esta transação?')) {
-                            deleteTransaction(btn.dataset.id);
-                        }
-                    });
-                });
-            }
+        });
+    });
+}
 
             // Função para salvar transação
             async function saveTransaction() {
