@@ -216,16 +216,46 @@
     
     <script>
         // Configuração do Supabase
-        const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+       
 
         // Variáveis globais
         let transactions = [];
         let currentEditId = null;
 
-        // DOM Ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Inicializa o Supabase DENTRO do DOMContentLoaded
+            const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
+            window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // 2. Variáveis globais
+            window.transactions = [];
+            window.currentEditId = null;
+
+            // 3. Verifica se o Supabase foi inicializado
+            if (!window.supabase) {
+                console.error('Supabase não foi inicializado corretamente');
+                return;
+            }
+
+            // 4. Agora executa suas funções
+            await loadTransactions();
+            setupEventListeners();
+
+            // 5. Todas as outras funções continuam aqui...
+            async function loadTransactions() {
+                showLoading(true);
+                try {
+                    const { data, error } = await window.supabase
+                        .from('transaction')
+                        .select(`...`);
+                    // Restante da função
+                } catch (error) {
+                    console.error('Erro:', error);
+                } finally {
+                    showLoading(false);
+                }
+            }
             // Carrega as transações ao iniciar
             loadTransactions();
 
