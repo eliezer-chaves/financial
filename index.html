@@ -229,35 +229,72 @@
             await loadTransactions();
 
             // Função para carregar transações
-            async function loadTransactions() {
-                showLoading(true);
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('transaction')
-                        .select(`
-                            id_transaction,
-                            date,
-                            quantity,
-                            value,
-                            tax,
-                            amount,
-                            id_brokerage, 
-                            brokerage: id_brokerage (name),
-                            transaction_type: id_transaction_type (name),
-                            ticker: id_ticker (ticker_name)
-                        `)
-                        .order('date', { ascending: false });
+            // Na função loadTransactions(), atualize a consulta para:
+async function loadTransactions() {
+    showLoading(true);
+    try {
+        const { data, error } = await supabaseClient
+            .from('transaction')
+            .select(`
+                id_transaction,
+                date,
+                quantity,
+                value,
+                tax,
+                amount,
+                id_brokerage,
+                brokerage: id_brokerage (name),
+                id_transaction_type,
+                transaction_type: id_transaction_type (name),
+                id_ticker,
+                ticker: id_ticker (ticker_name)
+            `)
+            .order('date', { ascending: false });
 
-                    if (error) throw error;
-                    
-                    transactions = data || [];
-                    renderTransactions();
-                } catch (error) {
-                    console.error('Erro ao carregar transações:', error);
-                    showAlert('danger', 'Erro ao carregar transações');
-                } finally {
-                    showLoading(false);
-                }
+        if (error) throw error;
+        
+        transactions = data || [];
+        renderTransactions();
+    } catch (error) {
+        console.error('Erro ao carregar transações:', error);
+        showAlert('danger', 'Erro ao carregar transações');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Na função renderTransactions(), atualize para:
+function renderTransactions() {
+    transactionsTable.innerHTML = '';
+
+    if (transactions.length === 0) {
+        transactionsTable.innerHTML = '<tr><td colspan="10" class="text-center">Nenhuma transação encontrada</td></tr>';
+        return;
+    }
+
+    transactions.forEach(transaction => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${transaction.id_transaction}</td>
+            <td>${formatDate(transaction.date)}</td>
+            <td>${transaction.transaction_type?.name || 'N/A'}</td>
+            <td>${transaction.brokerage?.name || 'N/A'}</td>
+            <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
+            <td>${formatNumber(transaction.quantity)}</td>
+            <td>R$ ${formatNumber(transaction.value)}</td>
+            <td>R$ ${formatNumber(transaction.tax || 0)}</td>
+            <td>R$ ${formatNumber(transaction.amount)}</td>
+            <td class="action-buttons">
+                <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger delete-btn" data-id="${transaction.id_transaction}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        transactionsTable.appendChild(row);
+    });
             }
 
             // Função para renderizar transações
