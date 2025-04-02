@@ -118,21 +118,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
    
     <script>
-
+const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        console.log("Fora");
 </script>
 
     <script>
         // Configuração e inicialização segura
         document.addEventListener('DOMContentLoaded', async () => {
-               // Inicializa o Supabase fora do evento para estar disponível globalmente
-    const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0dXdwY2hrb3RhbHBwb25ianp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM0MzY3NTksImV4cCI6MjA1OTAxMjc1OX0.gL_1exIGEYLiU475i_vcm06nt39VkgX7OYauMuxWDDY';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-        
-        
-           
-            // 1. Inicializa Supabase
-             
+            console.log("DOM");
             // 2. Elementos DOM
             const transactionsTable = document.getElementById('transactionsTable');
             const transactionForm = document.getElementById('transactionForm');
