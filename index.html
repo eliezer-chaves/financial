@@ -147,7 +147,7 @@ const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
             async function loadTransactions() {
                 showLoading(true);
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('transaction')
                         .select('*')
                         .order('date', { ascending: false });
@@ -217,7 +217,7 @@ const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
                     
                     if (currentTransactionId) {
                         // Edição
-                        const { error } = await supabase
+                        const { error } = await supabaseClient
                             .from('transaction')
                             .update(transactionData)
                             .eq('id', currentTransactionId);
@@ -225,7 +225,7 @@ const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
                         if (error) throw error;
                     } else {
                         // Criação
-                        const { error } = await supabase
+                        const { error } = await supabaseClient
                             .from('transaction')
                             .insert([transactionData]);
                         
@@ -248,7 +248,7 @@ const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
             async function editTransaction(id) {
                 showLoading(true);
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('transaction')
                         .select('*')
                         .eq('id', id)
@@ -280,7 +280,7 @@ const supabaseUrl = 'https://ttuwpchkotalpponbjzv.supabase.co';
                 
                 showLoading(true);
                 try {
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('transaction')
                         .delete()
                         .eq('id', id);
