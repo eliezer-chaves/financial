@@ -274,15 +274,15 @@ function renderTransactions() {
     transactions.forEach(transaction => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${transaction.id_transaction}</td>
-            <td>${formatDate(transaction.date)}</td>
-            <td>${transaction.transaction_type?.name || 'N/A'}</td>
-            <td>${transaction.brokerage?.brokerage_name || 'N/A'}</td>
-            <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
-            <td>${formatNumber(transaction.quantity)}</td>
-            <td>R$ ${formatNumber(transaction.value)}</td>
-            <td>R$ ${formatNumber(transaction.tax || 0)}</td>
-            <td>R$ ${formatNumber(transaction.amount)}</td>
+            <td class="text-center">${transaction.id_transaction}</td>
+            <td class="text-center">${formatDate(transaction.date)}</td>
+            <td class="text-center">${transaction.transaction_type?.name || 'N/A'}</td>
+            <td class="text-center">${transaction.brokerage?.brokerage_name || 'N/A'}</td>
+            <td class="text-center">${transaction.ticker?.ticker_name || 'N/A'}</td>
+            <td class="text-center">${formatNumber(transaction.quantity)}</td>
+            <td class="text-center">R$ ${formatNumber(transaction.value)}</td>
+            <td class="text-center">R$ ${formatNumber(transaction.tax || 0)}</td>
+            <td class="text-center">R$ ${formatNumber(transaction.amount)}</td>
             <td class="action-buttons">
                 <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${transaction.id_transaction}">
                     <i class="fas fa-edit"></i>
