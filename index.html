@@ -243,11 +243,11 @@ async function loadTransactions() {
                 value,
                 tax,
                 amount,
-                id_brokerage: id_brokerage (name),
+                brokerage: id_brokerage (name),
                 transaction_type: id_transaction_type (name),
                 ticker: id_ticker (ticker_name)
             `)
-            .order('date', { ascending: false });
+            .order('date', { ascending: true });
 
         if (error) throw error;
         
@@ -277,7 +277,7 @@ function renderTransactions() {
             <td>${transaction.id_transaction}</td>
             <td>${formatDate(transaction.date)}</td>
             <td>${transaction.transaction_type?.name || 'N/A'}</td>
-            <td>${transaction.id_brokerage?.name || 'N/A'}</td>
+            <td>${transaction.brokerage?.brokerage_name || 'N/A'}</td>
             <td>${transaction.ticker?.ticker_name || 'N/A'}</td>
             <td>${formatNumber(transaction.quantity)}</td>
             <td>R$ ${formatNumber(transaction.value)}</td>
