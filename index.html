@@ -273,8 +273,9 @@ function renderTransactions() {
 
     transactions.forEach(transaction => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="text-center">${transaction.id_transaction}</td>
+        row.innerHTML = 
+            `
+            <td class="text-center" style="display: block;">${transaction.id_transaction}</td>
             <td class="text-center">${formatDate(transaction.date)}</td>
             <td class="text-center">${transaction.transaction_type?.name || 'N/A'}</td>
             <td class="text-center">${transaction.brokerage?.brokerage_name || 'N/A'}</td>
