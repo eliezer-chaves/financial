@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Força o uso do index.php para processar as requisições
+    RewriteBase /
+    
+    # Se for um arquivo ou diretório real, serve diretamente
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Redireciona tudo para index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# CORS Headers (backup caso o PHP não execute)
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# Não mostra listagem de diretórios
+Options -Indexes
+
+# Segurança
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
